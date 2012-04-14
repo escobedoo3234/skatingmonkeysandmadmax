@@ -108,7 +108,13 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
                         }
                     }
                 }
-                smKeepGoing();
+                if (isBumped)
+                {
+                smBackUp();
+                }else
+                {
+                    smKeepGoing();
+                }
             }
         } catch (ConnectionLostException ex)
         {
@@ -330,8 +336,7 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
 //        }
         if (total < 300)
         {
-            isBumped = true;
-            driveDirect(-300, -300);
+//            isBumped = true;
         }else
         {
             isBumped = false;
@@ -348,5 +353,10 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     private void smKeepGoing() throws ConnectionLostException
     {
         driveDirect(300, 300);
+    }
+
+    private void smBackUp() throws ConnectionLostException
+    {
+        driveDirect(-300, -300);
     }
 }
