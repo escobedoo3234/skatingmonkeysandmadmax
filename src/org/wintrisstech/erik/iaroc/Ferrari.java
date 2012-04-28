@@ -33,6 +33,23 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     private final static int NUM_ROWS = 12;
     private final static int NUM_COLUMNS = 4;
     private final static int CELL_WIDTH = 712;
+    private final int[][] stateTable =
+    {
+        {
+            0, 2, 1, 3//state A
+        },
+        {
+            0, 2, 1, 3//State B
+        },
+        {
+            0, 2, 1, 3//State C
+        },
+        {
+            0, 2, 1, 3//State D
+        }
+    };
+    private int stateVector = 0;
+    private int presentState = 0;
     /*
      * State variables:
      */
@@ -81,42 +98,48 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     {
         try
         {
-            song(1, frontBump);
-            song(2, leftBump);
-            song(3, rightBump);
-            while (true)
-            {
-                readSensors(SENSORS_GROUP_ID6);
-                if (isBumpFront())
-                {
-                    isBumped = true;
-                    smBumpFront();
-                } else
-                {
-                    if (isBumpLeft())
-                    {
-                        if (isBumped)
-                        {
-                            smbumpLeft();
-                        }
-                    }
-                    if (isBumpRight())
-                    {
-                        if (isBumped)
-                        {
-                            smbumpRight();
-                        }
-                    }
-                }
-                if (isBumped)
-                {
-                smBackUp();
-                }else
-                {
-                    smKeepGoing();
-                }
-            }
-        } catch (ConnectionLostException ex)
+            stateController();
+            //        try
+            //        {
+            ////            song(1, frontBump);
+            ////            song(2, leftBump);
+            ////            song(3, rightBump);
+            ////            while (true)
+            ////            {
+            ////                readSensors(SENSORS_GROUP_ID6);
+            ////                if (isBumpFront())
+            ////                {
+            ////                    isBumped = true;
+            ////                    smBumpFront();
+            ////                } else
+            ////                {
+            ////                    if (isBumpLeft())
+            ////                    {
+            ////                        if (isBumped)
+            ////                        {
+            ////                            smbumpLeft();
+            ////                        }
+            ////                    }
+            ////                    if (isBumpRight())
+            ////                    {
+            ////                        if (isBumped)
+            ////                        {
+            ////                            smbumpRight();
+            ////                        }
+            ////                    }
+            ////                }
+            ////                if (isBumped)
+            ////                {
+            ////                    smBackUp();
+            ////                } else
+            ////                {
+            ////                    smKeepGoing();
+            ////                }
+            ////            }
+            //        }
+            //        {
+            //        }
+        } catch (Exception ex)
         {
         }
     }
@@ -296,9 +319,77 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
 
     /**
      * *********************************************************************************
-     * Thomas and Oscar' Super Awsomely Awsome API Of Awsomeness
+     * Thomas and Oscar' Super Awsomely Awsome API Of Awsomeness + pedro
      * *********************************************************************************
      */
+    public void stateController() throws Exception
+    {
+        getStateVector();
+        driveDirect(200, 200);
+        while (true)
+        {
+            getStateVector();
+            switch (stateTable[presentState][stateVector])
+            {
+                case 0:
+                    presentState = 0;
+                    break;
+                case 1:
+                    backingUp("Right");
+                    presentState = 1;
+                    break;
+                case 2:
+                    backingUp("Left");
+                    presentState = 2;
+                    break;
+                case 3:
+                    backingUp("Both");
+                    presentState = 3;
+                    break;
+            }
+        }
+    }
+
+    public void getStateVector() throws Exception
+    {
+        readSensors(SENSORS_GROUP_ID6);
+        if (!isBumpLeft() && !isBumpRight())
+        {
+            stateVector = 0;
+        }
+        if (!isBumpLeft() && isBumpRight())
+        {
+            stateVector = 1;
+        }
+        if (isBumpLeft() && !isBumpRight())
+        {
+            stateVector = 2;
+        }
+        if (isBumpLeft() && isBumpRight())
+        {
+            stateVector = 3;
+        }
+        dashboard.log("ps/stv = " + presentState + "/" + stateVector);
+    }
+
+    public void backingUp(String s) throws Exception
+    {
+        if (s.equals("Right"))
+        {
+            driveDirect(-200, -300);
+        }
+        if (s.equals("Left"))
+        {
+            driveDirect(-300, -200);
+        }
+        if (s.equals("Both"))
+        {
+            driveDirect(-300, -300);
+        }
+        SystemClock.sleep(2000);
+        driveDirect(300, 300);
+    }
+
     public void smstop() throws ConnectionLostException
     {
         driveDirect(0, 0);
@@ -337,7 +428,7 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
         if (total < 300)
         {
 //            isBumped = true;
-        }else
+        } else
         {
             isBumped = false;
             smstop();
