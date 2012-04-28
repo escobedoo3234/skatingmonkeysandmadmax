@@ -3,8 +3,6 @@ package org.wintrisstech.erik.iaroc;
 import android.os.SystemClock;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 import org.wintrisstech.irobot.ioio.IRobotCreateScript;
@@ -324,25 +322,24 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
      */
     public void stateController() throws Exception
     {
-        getStateVector();
-        driveDirect(200, 200);
         while (true)
         {
             getStateVector();
             switch (stateTable[presentState][stateVector])
             {
-                case 0:
+                case 0: // A
                     presentState = 0;
+                    smSpin();
                     break;
-                case 1:
+                case 1: // B
                     backingUp("Right");
                     presentState = 1;
                     break;
-                case 2:
+                case 2: // C
                     backingUp("Left");
                     presentState = 2;
                     break;
-                case 3:
+                case 3: // D
                     backingUp("Both");
                     presentState = 3;
                     break;
@@ -353,6 +350,8 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     public void getStateVector() throws Exception
     {
         readSensors(SENSORS_GROUP_ID6);
+        dashboard.log("reading sensors");
+        SystemClock.sleep(20);
         if (!isBumpLeft() && !isBumpRight())
         {
             stateVector = 0;
@@ -449,5 +448,18 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     private void smBackUp() throws ConnectionLostException
     {
         driveDirect(-300, -300);
+    }
+
+    private void smSpin() throws ConnectionLostException
+    {
+        int iRbyte = this.getInfraredByte();
+        dashboard.log("irb=" + iRbyte );
+        if (iRbyte == 255)
+        {
+            driveDirect(-200, 200);
+        }else
+        {
+            driveDirect(200, 200);
+        }
     }
 }
