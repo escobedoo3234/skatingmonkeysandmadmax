@@ -71,6 +71,8 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     };
     private int total;
     private boolean isBumped;
+    private int heading = 0;
+    private int cruisingSpeed = 100;
 
     /**
      * Constructs a Ferrari, an amazing machine!
@@ -350,7 +352,8 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     public void getStateVector() throws Exception
     {
         readSensors(SENSORS_GROUP_ID6);
-        dashboard.log("reading sensors");
+        heading += getAngle();
+        dashboard.log("Heading =" + heading);
         SystemClock.sleep(20);
         if (!isBumpLeft() && !isBumpRight())
         {
@@ -375,18 +378,18 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     {
         if (s.equals("Right"))
         {
-            driveDirect(-200, -300);
+            driveDirect(-cruisingSpeed/2, -cruisingSpeed);
         }
         if (s.equals("Left"))
         {
-            driveDirect(-300, -200);
+            driveDirect(-cruisingSpeed, -cruisingSpeed/2);
         }
         if (s.equals("Both"))
         {
-            driveDirect(-300, -300);
+            driveDirect(-cruisingSpeed, -cruisingSpeed);
         }
         SystemClock.sleep(2000);
-        driveDirect(300, 300);
+        driveDirect(cruisingSpeed, cruisingSpeed);
     }
 
     public void smstop() throws ConnectionLostException
@@ -397,13 +400,13 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     public void smbumpLeft() throws ConnectionLostException
     {
         playSong(2);
-        driveDirect(-300, -200);
+        driveDirect(-cruisingSpeed, -cruisingSpeed/2);
     }
 
     public void smbumpRight() throws ConnectionLostException
     {
         playSong(3);
-        driveDirect(-200, -300);
+        driveDirect(-cruisingSpeed/2, -cruisingSpeed);
     }
 
     /**
@@ -442,24 +445,58 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
 
     private void smKeepGoing() throws ConnectionLostException
     {
-        driveDirect(300, 300);
+        driveDirect(cruisingSpeed, cruisingSpeed);
     }
 
     private void smBackUp() throws ConnectionLostException
     {
-        driveDirect(-300, -300);
+        driveDirect(-cruisingSpeed, -cruisingSpeed);
+    }
+
+    private void smDrive(int left, int right) throws ConnectionLostException
+    {
+        driveDirect(right, left);
     }
 
     private void smSpin() throws ConnectionLostException
     {
         int iRbyte = this.getInfraredByte();
-        dashboard.log("irb=" + iRbyte );
+        dashboard.log("irb=" + iRbyte);
         if (iRbyte == 255)
         {
-            driveDirect(-200, 200);
-        }else
+            turnNorth();
+            smDrive(cruisingSpeed, -cruisingSpeed);
+        } else if (iRbyte == 242)
         {
-            driveDirect(200, 200);
+            dashboard.log("Force Field!");
+            smstop();
+        } else if (iRbyte == 244)
+        {
+            smDrive(cruisingSpeed/2, cruisingSpeed/3);
+        } else if (iRbyte == 248)
+        {
+            smDrive(cruisingSpeed/3, cruisingSpeed/2);
+        } else if (iRbyte == 246)
+        {
+            smDrive(cruisingSpeed/2, cruisingSpeed/3);
+        } else if (iRbyte == 250)
+        {
+            smDrive(cruisingSpeed/3, cruisingSpeed/2);
+        } else
+        {
+            smDrive(cruisingSpeed, cruisingSpeed);
         }
+    }
+
+    private void turnNorth() throws ConnectionLostException
+    {
+        if(heading < 0)
+        {
+            smDrive(-cruisingSpeed, cruisingSpeed);
+        }else if(heading > 0)
+        {
+            smDrive(cruisingSpeed, -cruisingSpeed);
+        }
+
     }
 }
