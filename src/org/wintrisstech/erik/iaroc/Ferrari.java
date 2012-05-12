@@ -71,8 +71,8 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     };
     private int total;
     private boolean isBumped;
-    private int heading = 0;
-    private int cruisingSpeed = 100;
+//    private int heading = 0;
+//    private int cruisingSpeed = 100;
 
     /**
      * Constructs a Ferrari, an amazing machine!
@@ -352,8 +352,8 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     public void getStateVector() throws Exception
     {
         readSensors(SENSORS_GROUP_ID6);
-        heading += getAngle();
-        dashboard.log("Heading =" + heading);
+//        heading += getAngle();
+//        dashboard.log("Heading =" + heading);
         SystemClock.sleep(20);
         if (!isBumpLeft() && !isBumpRight())
         {
@@ -378,18 +378,18 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     {
         if (s.equals("Right"))
         {
-            driveDirect(-cruisingSpeed/2, -cruisingSpeed);
+            driveDirect(-200, -300);
         }
         if (s.equals("Left"))
         {
-            driveDirect(-cruisingSpeed, -cruisingSpeed/2);
+            driveDirect(-300, -200);
         }
         if (s.equals("Both"))
         {
-            driveDirect(-cruisingSpeed, -cruisingSpeed);
+            driveDirect(-300, -300);
         }
         SystemClock.sleep(2000);
-        driveDirect(cruisingSpeed, cruisingSpeed);
+        driveDirect(300, 300);
     }
 
     public void smstop() throws ConnectionLostException
@@ -400,13 +400,13 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
     public void smbumpLeft() throws ConnectionLostException
     {
         playSong(2);
-        driveDirect(-cruisingSpeed, -cruisingSpeed/2);
+        driveDirect(-300, -200);
     }
 
     public void smbumpRight() throws ConnectionLostException
     {
         playSong(3);
-        driveDirect(-cruisingSpeed/2, -cruisingSpeed);
+        driveDirect(-200, -300);
     }
 
     /**
@@ -445,12 +445,12 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
 
     private void smKeepGoing() throws ConnectionLostException
     {
-        driveDirect(cruisingSpeed, cruisingSpeed);
+        driveDirect(300, 300);
     }
 
     private void smBackUp() throws ConnectionLostException
     {
-        driveDirect(-cruisingSpeed, -cruisingSpeed);
+        driveDirect(-300, -300);
     }
 
     private void smDrive(int left, int right) throws ConnectionLostException
@@ -464,39 +464,26 @@ public class Ferrari extends IRobotCreateAdapter implements Runnable
         dashboard.log("irb=" + iRbyte);
         if (iRbyte == 255)
         {
-            turnNorth();
-            smDrive(cruisingSpeed, -cruisingSpeed);
+            smDrive(300, -300);
         } else if (iRbyte == 242)
         {
             dashboard.log("Force Field!");
             smstop();
         } else if (iRbyte == 244)
         {
-            smDrive(cruisingSpeed/2, cruisingSpeed/3);
+            smDrive(150, 100);
         } else if (iRbyte == 248)
         {
-            smDrive(cruisingSpeed/3, cruisingSpeed/2);
+            smDrive(100, 150);
         } else if (iRbyte == 246)
         {
-            smDrive(cruisingSpeed/2, cruisingSpeed/3);
+            smDrive(150, 100);
         } else if (iRbyte == 250)
         {
-            smDrive(cruisingSpeed/3, cruisingSpeed/2);
+            smDrive(100, 150);
         } else
         {
-            smDrive(cruisingSpeed, cruisingSpeed);
+            smDrive(300, 300);
         }
-    }
-
-    private void turnNorth() throws ConnectionLostException
-    {
-        if(heading < 0)
-        {
-            smDrive(-cruisingSpeed, cruisingSpeed);
-        }else if(heading > 0)
-        {
-            smDrive(cruisingSpeed, -cruisingSpeed);
-        }
-
     }
 }
